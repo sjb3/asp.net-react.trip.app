@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import axios from "axios";
 
-export default class CreateTrip extends Component {
+export default class UpdateTrip extends Component {
   constructor(props) {
     super(props);
 
@@ -13,27 +13,55 @@ export default class CreateTrip extends Component {
     };
   }
 
+  componentDidMount() {
+    const { id } = this.props.match.params;
+
+    axios
+      .get(`api/Trips/SingleTrip/${id}`)
+      .then((trip) => {
+        const response = trip.data;
+
+        this.setState({
+          name: response.name,
+          description: response.description,
+          dateStarted: new Date(response.dateStarted)
+            .toISOString()
+            .slice(0, 10),
+          dateCompleted:
+            response.dateCompleted &&
+            new Date(response.dateCompleted).toISOString().slice(0, 10),
+        });
+      })
+      .catch((err) => console.error(err));
+  }
+
   handleChange = (e) => {
     this.setState({ [e.target.name]: e.target.value });
   };
 
   onSubmit = (e) => {
     e.preventDefault();
+    const { id } = this.props.match.params;
 
     let tripObject = {
-      Id: Math.floor(Math.random() * 1000),
       name: this.state.name,
       description: this.state.description,
-      dateStarted: this.state.dateStarted,
-      dateCompleted: this.state.dateCompleted,
+      dateStarted: new Date(this.state.dateStarted).toISOString(),
+      dateCompleted:
+        this.state.dateCompleted &&
+        new Date(this.state.dateCompleted).toISOString(),
     };
 
     axios
-      .post("api/Trips/AddTrip", tripObject)
+      .put(`api/Trips/updateTrip/${id}`, tripObject)
       .then((result) => {
         this.props.history.push("/trips");
       })
       .catch((err) => console.error(err));
+  };
+
+  onUpdateCancel = () => {
+    this.props.history.push("/trips");
   };
 
   render() {
@@ -89,7 +117,12 @@ export default class CreateTrip extends Component {
           </div>
 
           <div className="form-group">
-            <input type="submit" value="Add trip" className="btn btn-primary" />
+            <button onClick={this.onUpdateCancel} className="btn btn-default">
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-success">
+              Update
+            </button>
           </div>
         </form>
       </div>

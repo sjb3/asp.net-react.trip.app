@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Trips.Data;
 
@@ -16,8 +17,18 @@ namespace Trips.Contollers
     [HttpGet("[action]")]
     public IActionResult GetTrips()
     {
-      var allTrips = _service.GetAllTrips();
-      return Ok(allTrips);
+      try
+      {
+        // throw new Exception();
+
+        var allTrips = _service.GetAllTrips();
+        return Ok(allTrips);
+
+      }
+      catch (Exception ex)
+      {
+        return BadRequest(ex.Message);
+      }
     }
 
     // GET/id method

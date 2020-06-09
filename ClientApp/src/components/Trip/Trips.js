@@ -8,6 +8,8 @@ export default class Trips extends Component {
     this.state = {
       trips: [],
       loading: true,
+      failed: false,
+      error: "",
     };
   }
 
@@ -22,9 +24,26 @@ export default class Trips extends Component {
       this.setState({
         trips: response,
         loading: false,
+        failed: false,
+        error: "",
+      });
+    }).catch((error) => {
+      this.setState({
+        trips: [],
+        loading: false,
+        failed: true,
+        error: "Cannot be loaded",
       });
     });
   }
+
+  onTripUpdate = (id) => {
+    this.props.history.push(`/update/${id}`);
+  };
+
+  onTripDelete = (id) => {
+    this.props.history.push(`/delete/${id}`);
+  };
 
   renderAllTrips = (trips) => {
     return (
@@ -43,13 +62,28 @@ export default class Trips extends Component {
             <tr key={i}>
               <td>{trip.name}</td>
               <td>{trip.description}</td>
-              <td>{new Date(trip.dateStarted).toLocaleDateString()}</td>
+              <td>{new Date(trip.dateStarted).toISOString().slice(0, 10)}</td>
               <td>
                 {trip.dateCompleted
-                  ? new Date(trip.dateCompleted).toLocaleDateString()
+                  ? new Date(trip.dateCompleted).toISOString().slice(0, 10)
                   : "-"}
               </td>
-              <td>-</td>
+              <td>
+                <div className="form-group">
+                  <button
+                    onClick={() => this.onTripUpdate(trip.id)}
+                    className="btn btn-success"
+                  >
+                    Update
+                  </button>
+                  <button
+                    onClick={() => this.onTripDelete(trip.id)}
+                    className="btn btn-danger"
+                  >
+                    Danger
+                  </button>
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -58,13 +92,19 @@ export default class Trips extends Component {
   };
 
   render() {
-    let content = this.state.loading ? (
-      <p>
-        <em>Loading ...</em>
-      </p>
-    ) : (
-      this.renderAllTrips(this.state.trips)
-    );
+    let content = this.state.loading
+      ? (
+        <p>
+          <em>Loading ...</em>
+        </p>
+      )
+      : (this.state.failed
+        ? (
+          <div className="text-danger">
+            <em>{this.state.error}</em>
+          </div>
+        )
+        : (this.renderAllTrips(this.state.trips)));
     return (
       <div>
         <h1>ALl TRIPS</h1>
